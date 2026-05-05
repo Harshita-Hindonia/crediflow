@@ -1,0 +1,1 @@
+# boto3 is included in the Lambda Python 3.11 runtime - no extra packages needed

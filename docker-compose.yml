@@ -1,0 +1,31 @@
+services:
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: creditflow-dynamodb
+    ports: ["8000:8000"]
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+
+  backend:
+    build: ./backend
+    container_name: creditflow-backend
+    ports: ["5000:5000"]
+    environment:
+      AWS_REGION: us-east-1
+      DDB_TABLE_NAME: creditflow-dev-applications
+      AWS_ACCESS_KEY_ID: dummy
+      AWS_SECRET_ACCESS_KEY: dummy
+      AWS_ENDPOINT_URL: http://dynamodb:8000
+      FLASK_DEBUG: "1"
+    depends_on: [dynamodb]
+    volumes: ["./backend:/app"]
+    command: python app.py
+
+  frontend:
+    image: node:20-alpine
+    container_name: creditflow-frontend
+    working_dir: /app
+    ports: ["3000:3000"]
+    environment:
+      VITE_API_BASE: http://localhost:5000
+    volumes: ["./frontend:/app"]
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
